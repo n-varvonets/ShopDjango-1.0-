@@ -51,6 +51,7 @@ class CartProduct(models.Model):
         return "Product: {} (in cart)".format(self.product.tittle)
 
 
+
 class Cart(models.Model):
 
     owner = models.ForeignKey('Customer', verbose_name='Owner', on_delete=models.CASCADE)
