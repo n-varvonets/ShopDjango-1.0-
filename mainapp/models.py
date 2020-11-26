@@ -1,14 +1,15 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 User = get_user_model()  # we tell django what want use user what specify in settings.AUTH_USER_MODEL
 
 # Create your models here:
 # 1 Category
 # 2 Product
-# 3 CartProduct(in basket)
-# 4 Basket/Cart(Сама корзина)
+# 3 CartProduct(Product in basket)
+# 4 Basket/Cart(Сама корзина в которой будут храниться все CartProducts)
 # 5 Order
 # *********
 # 6 Customer
@@ -27,6 +28,9 @@ class Category(models.Model):
 
 class Product(models.Model):
 
+    class Meta:
+        abstract = True
+
     category = models.ForeignKey(Category, verbose_name='Category', on_delete=models.CASCADE)  # connect by model
     # Category and in case delete - we delete  all connections
     tittle = models.CharField(max_length=255, verbose_name='Product name')
@@ -43,7 +47,19 @@ class CartProduct(models.Model):
 
     customer = models.ForeignKey('Customer', verbose_name="Customer", on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', verbose_name='Cart', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, verbose_name="Product", on_delete=models.CASCADE, related_name='related_product')
+
+    # но как понять от какого продукта будем делать продукт в карзине
+    # что бы не создавть для каждого продукта свой foreignkey на помощь на придут ContentType/GenericForeignKey
+    # product = models.ForeignKey(Product, verbose_name="Product", on_delete=models.CASCADE, related_name='related_product')
+
+    # ContentType - микрофрейморк, который видит все модели, object_id - индефикатор экземпляра модели
+# p = NoteBookProduct.objects.get(pk=1)
+# cp = CartProduct.onjects.create(content_object=p)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
     qty = models.PositiveIntegerField(default=1)
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Total price')
 
@@ -74,11 +90,4 @@ class Customer(models.Model):
         return 'Customer: {} {}'.format(self.user.first_name, self.user.last_name)
 
 
-class Specifications(models.Model):
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    name = models.CharField(max_length=255, verbose_name='Name of product')
-
-    def __str__(self):
-        return 'Specifications for products {}'.format(self.name)
