@@ -5,20 +5,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 
 User = get_user_model()  # we tell django what want use user what specify in settings.AUTH_USER_MODEL
 
-# Create your models here:
-# 1 Category
-# 2 Product
-# 3 CartProduct(Product in basket)
-# 4 Basket/Cart(Сама корзина в которой будут храниться все CartProducts)
-# 5 Order
-# *********
-# 6 Customer
-# 7 Specification of product(характеристики...там даиганаль, ёмкость батарее и т.д.)
-
 
 class Category(models.Model):
-    """То что в нашем url будет endpoint-ом конечным
-    (куда мы хотим попасть, что бы получить какаой-то конкретный обьект модели)"""
     name = models.CharField(max_length=255, verbose_name="Name of category")
     slug = models.SlugField(unique=True)  # instead unique id we put the product name in url for find him
 
@@ -27,7 +15,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-
+    """Make abstract model(without migrations with DB, just for inheritance)"""
     class Meta:
         abstract = True
 
@@ -44,18 +32,11 @@ class Product(models.Model):
 
 
 class CartProduct(models.Model):
-
     customer = models.ForeignKey('Customer', verbose_name="Customer", on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', verbose_name='Cart', on_delete=models.CASCADE)
-
-    # но как понять от какого продукта будем делать продукт в карзине
-    # что бы не создавть для каждого продукта свой foreignkey на помощь на придут ContentType/GenericForeignKey
-    # product = models.ForeignKey(Product, verbose_name="Product", on_delete=models.CASCADE, related_name='related_product')
-
-    # ContentType - микрофрейморк, который видит все модели, object_id - индефикатор экземпляра модели
-# p = NoteBookProduct.objects.get(pk=1)
-# cp = CartProduct.onjects.create(content_object=p)
-
+    """In order not to create n quantity of new ClassProducts in the cart, we create it as a single external 
+    ClassProduct and then with the use of these 3 lines we inherit its characteristics, passing the name of 
+    ClassProduct to ContentType. """
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
@@ -67,9 +48,19 @@ class CartProduct(models.Model):
         return "Product: {} (in cart)".format(self.product.tittle)
 
 
+class NoteBookProduct(Product):
+    diagonal = models.CharField(max_length=255, verbose_name='Diagonal')
+    display_types = models.CharField(max_length=255, verbose_name='Display type')
+    processor_freq = models.CharField(max_length=255, verbose_name='Processor frequency')
+    ram = models.CharField(max_length=255, verbose_name='RAM')
+    video = models.CharField(max_length=255, verbose_name='Video card')
+    time_without_charge = models.CharField(max_length=255, verbose_name='Time without charge')
+
+    def __str__(self):
+        return '{} : {}'.format(self.category.name, self.tittle)
+
 
 class Cart(models.Model):
-
     owner = models.ForeignKey('Customer', verbose_name='Owner', on_delete=models.CASCADE)
     product = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')  # many models connection
     total_product = models.PositiveIntegerField(default=0)  # netbook= 2, Iphone = 3, products = 2, total_prod = 5
@@ -80,7 +71,7 @@ class Cart(models.Model):
 
 
 class Customer(models.Model):
-    '''connect user from settings.AUTH_MODEL'''
+    """connect user from settings.AUTH_MODEL"""
 
     user = models.ForeignKey(User, verbose_name="User", on_delete=models.CASCADE)
     phone = models.CharField(max_length=20, verbose_name='Number of phone')
@@ -88,6 +79,3 @@ class Customer(models.Model):
 
     def __str__(self):
         return 'Customer: {} {}'.format(self.user.first_name, self.user.last_name)
-
-
-
