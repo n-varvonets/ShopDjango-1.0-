@@ -16,6 +16,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     """Make abstract model(without migrations with DB, just for inheritance)"""
+
     class Meta:
         abstract = True
 
@@ -34,9 +35,9 @@ class Product(models.Model):
 class CartProduct(models.Model):
     customer = models.ForeignKey('Customer', verbose_name="Customer", on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', verbose_name='Cart', on_delete=models.CASCADE)
-    """In order not to create n quantity of new ClassProducts in the cart, we create it as a single external 
-    ClassProduct and then with the use of these 3 lines we inherit its characteristics, passing the name of 
-    ClassProduct to ContentType. """
+    """In order not to create n quantity of new Class(Products) in the cart, we create it as a single external 
+    Class(Product) and then with the use of these 3 lines we inherit its characteristics, passing the name of 
+    Class(Product) to ContentType. """
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
@@ -48,13 +49,39 @@ class CartProduct(models.Model):
         return "Product: {} (in cart)".format(self.product.tittle)
 
 
-class NoteBookProduct(Product):
+class Notebook(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Diagonal')
     display_types = models.CharField(max_length=255, verbose_name='Display type')
     processor_freq = models.CharField(max_length=255, verbose_name='Processor frequency')
     ram = models.CharField(max_length=255, verbose_name='RAM')
     video = models.CharField(max_length=255, verbose_name='Video card')
     time_without_charge = models.CharField(max_length=255, verbose_name='Time without charge')
+
+    def __str__(self):
+        return '{} : {}'.format(self.category.name, self.tittle)
+
+
+class Smartphone(Product):
+    diagonal = models.CharField(max_length=255, verbose_name='Diagonal')
+    display_types = models.CharField(max_length=255, verbose_name='Display type')
+    resolution = models.CharField(max_length=255, verbose_name='Display resolution')  # 720x480
+    accum_volume = models.CharField(max_length=255, verbose_name='Battery volume')
+    sd = models.BooleanField(default=True)  # bool value, because most phones have an sd card
+    main_camera_mp = models.CharField(max_length=255, verbose_name=' Main camera')
+    frontal_camera_mp = models.CharField(max_length=255, verbose_name=' Frontal camera')
+
+    def __str__(self):
+        return '{} : {}'.format(self.category.name, self.tittle)
+
+
+class Powerbank(Product):
+    voltage = models.CharField(max_length=255, verbose_name='Voltage')
+    ampere_flow = models.CharField(max_length=255, verbose_name='Ampere Flow')
+    Fast_charging = models.BooleanField(default=True)
+    wireless = models.BooleanField(default=True)
+    capacity = models.CharField(max_length=255, verbose_name='Capacity')
+    size = models.CharField(max_length=255, verbose_name='Size')
+    weight = models.CharField(max_length=255, verbose_name='Weight')
 
     def __str__(self):
         return '{} : {}'.format(self.category.name, self.tittle)
