@@ -49,7 +49,6 @@ class LatestProducts:
 # LatestProducts.objects.get_products_for_main_page('smartphone', 'notebook', 'powerbank', with_respect_to='powerbank')
 
 
-
 class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name="Name of category")
     slug = models.SlugField(unique=True)  # instead unique id we put the product name in url for find him
