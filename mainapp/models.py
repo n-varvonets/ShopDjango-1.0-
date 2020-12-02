@@ -6,6 +6,50 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 User = get_user_model()  # we tell django what want use user what specify in settings.AUTH_USER_MODEL
 
 
+class LatestProductsManager:
+
+    @staticmethod
+    def get_products_for_main_page(*args, **kwargs):
+
+        products = []  # variable for 1st case(*args)
+        with_respect_to = kwargs.get('with_respect_to')  # variable for 2nd case which had data of **kwargs
+        """1st case [we want to render the last 5 created products]- we get *arg(for example 'nebooks' and make sort 
+        last of 5) """
+        ct_models = ContentType.objects.filter(model__in=args)  # make request ContentType to our models and
+        # filtering them which we get in our **args**
+        for ct_model in ct_models:  # ct_model - this is a "slug" of created category
+            model_products = ct_model.model_class()._base_manager.all().order_by('-id')[:5]  # model_class() - make
+            # request to them parents (for example 'notebooks'). _base_manager - something like to reference to objects
+            products.extend(model_products)
+            #  """ 2nd case [We want to make the product we want more preferable]
+        #  (e.g. smartphones are more priority than notebooks) - we get **kwargs """
+        if with_respect_to:  # check if we got **kwargs
+            ct_model = ContentType.objects.filter(model=with_respect_to)  # rewrite the variable "slug'
+            if ct_model.exists():  # checking  received 'slag'/data_of_category_name that we got in **kwargs are
+                # actually existing in our model.py
+                if with_respect_to in args:  # checking if '*args' had at least one **kwargs
+                    # ('fridge', 'power_bank', with_respect_to='notebook' - for checking this case of error)
+                    return sorted(
+                        products, key=lambda x: x.__class__._meta.model_name.startswith(with_respect_to), reverse=True
+                    )
+                    # sorted our products by key, which we get by contacting to name of meta attribute 'slug' category
+        return products
+
+
+class LatestProducts:
+    objects = LatestProductsManager()
+
+
+# STR to see  data of LatestProducts with:
+# _____1 args received:
+# python manage.py shell
+# from mainapp.models import LatestProducts
+# LatestProducts.objects.get_products_for_main_page('smartphone', 'notebook')
+# _____2+ args received=> **kwargs:
+# LatestProducts.objects.get_products_for_main_page('smartphone', 'notebook', 'powerbank', with_respect_to='powerbank')
+
+
+
 class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name="Name of category")
     slug = models.SlugField(unique=True)  # instead unique id we put the product name in url for find him
