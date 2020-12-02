@@ -54,7 +54,7 @@ class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name="Name of category")
     slug = models.SlugField(unique=True)  # instead unique id we put the product name in url for find him
 
-    def __str__(self):  # return instead 'object' --> name(как он у нас будет представлен, когда будем получать обьекты)
+    def __str__(self):  # return instead 'object' --> name (how it will be presented when we receive the objects)
         return self.name
 
 
