@@ -1,10 +1,19 @@
 from django.db import models
+from PIL import Image
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
 
 User = get_user_model()  # we tell django what want use user what specify in settings.AUTH_USER_MODEL
+
+
+class MinResolutionErrorException(Exception):
+    pass
+
+
+class MaxResolutionErrorException(Exception):
+    pass
 
 
 class LatestProductsManager:
@@ -59,6 +68,11 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+
+    MIN_RESOLUTION = (400, 400)
+    MAX_RESOLUTION = (1500, 1500)
+    MAX_SIZE_IMG = 31457  # 3 Mb = 3145728 bytes
+
     """Make abstract model(without migrations with DB, just for inheritance)"""
 
     class Meta:
@@ -74,6 +88,17 @@ class Product(models.Model):
 
     def __str__(self):
         return self.tittle
+
+    def save(self, *args, **kwargs):
+        image = self.image
+        img = Image.open(image)
+        min_height, min_width = self.MIN_RESOLUTION
+        max_height, max_width = self.MAX_RESOLUTION
+        if img.height < min_height or img.width < min_width:
+            raise MinResolutionErrorException('Image resolution less than minimum allowed!')
+        if img.height > max_height or img.width > max_width:
+            raise MaxResolutionErrorException('Image resolution more than maximum allowed!')
+        return image
 
 
 class CartProduct(models.Model):
