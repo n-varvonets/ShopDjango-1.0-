@@ -1,8 +1,11 @@
 from django.db import models
 from PIL import Image
+import sys  # for finding size img
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from io import BytesIO  # need for convert img in bytes
+from django.core.files.uploadedfile import InMemoryUploadedFile  # allows find files uploaded through forms (img)
 
 
 User = get_user_model()  # we tell django what want use user what specify in settings.AUTH_USER_MODEL
@@ -69,9 +72,9 @@ class Category(models.Model):
 
 class Product(models.Model):
 
-    MIN_RESOLUTION = (400, 400)
-    MAX_RESOLUTION = (1500, 1500)
-    MAX_SIZE_IMG = 31457  # 3 Mb = 3145728 bytes
+    MIN_RESOLUTION = (200, 200)
+    MAX_RESOLUTION = (800, 800)
+    MAX_SIZE_IMG = 3145728  # 3 Mb = 3145728 bytes
 
     """Make abstract model(without migrations with DB, just for inheritance)"""
 
@@ -97,8 +100,18 @@ class Product(models.Model):
         if img.height < min_height or img.width < min_width:
             raise MinResolutionErrorException('Image resolution less than minimum allowed!')
         if img.height > max_height or img.width > max_width:
-            raise MaxResolutionErrorException('Image resolution more than maximum allowed!')
-        return image
+            """if more than we cut img"""
+            new_img = img.convert('RGB')
+            resized_new_image = new_img.resize((450, 350), Image.ANTIALIAS)
+            filestream = BytesIO()  # a variable that will convert an image into a data stream (bytes)
+            resized_new_image.save(filestream, "JPEG", quality=90)
+            filestream.seek(0)  # Moving to the 0(first) byte from the beginning of the file.
+            new_name_resized_img = '{}'.format(self.image.name)
+            self.image = InMemoryUploadedFile(
+                filestream, "ImageField", new_name_resized_img, 'jpeg/image', sys.getsizeof(filestream), None
+            )  # need to pass in InMemoryUploadedFile 6 args (file, field_name, name, content_type, size, charset)
+        super().save(*args, **kwargs)
+
 
 
 class CartProduct(models.Model):
