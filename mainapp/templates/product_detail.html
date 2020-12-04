@@ -10,15 +10,23 @@
 </nav>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <img src="{{ product.image.url }}"  class='img-fluid' alt="">
     </div>
-    <div class="col-md-8">
+    <div class="col-md-9">
         <h5>{{ product.tittle }}</h5>
         <p>Price: {{ product.price }} $</p>
-        <p class="text-justify"><small>Description: {{ product.description }}</small></p>
-
+        <p class="text-justify" id="overflow"><small>Description: {{ product.description }}</small></p>
     </div>
+    <p class="mt-4">Features</p>
+    {% if product.category.slug == 'notebooks' %}
+        {% include 'notebook_specification.html' %}
+    {% elif product.category.slug == 'smartphones' %}
+        {% include 'smartphone_specification.html' %}
+    {% elif product.category.slug == 'powerbanks' %}
+        {% include 'powerbank_specification.html' %}
+    {% endif %}
+
 
 </div>
 

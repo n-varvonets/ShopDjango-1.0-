@@ -77,7 +77,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    MIN_RESOLUTION = (200, 200)
+    MIN_RESOLUTION = (170, 170)
     MAX_RESOLUTION = (800, 800)
     MAX_SIZE_IMG = 3145728  # 3 Mb = 3145728 bytes
 
