@@ -6,9 +6,15 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from io import BytesIO  # need for convert img in bytes
 from django.core.files.uploadedfile import InMemoryUploadedFile  # allows find files uploaded through forms (img)
-
+from django.urls import reverse  # need for building url dor our object in mainapp/templates/product_detail.html
 
 User = get_user_model()  # we tell django what want use user what specify in settings.AUTH_USER_MODEL
+
+
+def get_product_url(obj, viewname):  # 1arg - our product, 2arg- name of pattern which we pass in shop/urls.pattern,
+    ct_model = obj.__class__.meta.model_name  # every obj had hidden attribute 'meta' though which we can get model name
+    return reverse(viewname, kwargs={'ct_model': ct_model, 'slug': obj.slug})  # 'ct_model' - name of category which we
+    #  pass to shop/urls.pattern as regular expression
 
 
 class MinResolutionErrorException(Exception):
@@ -71,7 +77,6 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-
     MIN_RESOLUTION = (200, 200)
     MAX_RESOLUTION = (800, 800)
     MAX_SIZE_IMG = 3145728  # 3 Mb = 3145728 bytes
@@ -113,7 +118,6 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
 
-
 class CartProduct(models.Model):
     customer = models.ForeignKey('Customer', verbose_name="Customer", on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', verbose_name='Cart', on_delete=models.CASCADE)
@@ -142,6 +146,9 @@ class Notebook(Product):
     def __str__(self):
         return '{} : {}'.format(self.category.name, self.tittle)
 
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')  # self - obj, 'product_detail' - created viewname
+
 
 class Smartphone(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Diagonal')
@@ -154,6 +161,9 @@ class Smartphone(Product):
 
     def __str__(self):
         return '{} : {}'.format(self.category.name, self.tittle)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
 
 
 class Powerbank(Product):
@@ -177,6 +187,9 @@ class Cart(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
 
 
 class Customer(models.Model):
