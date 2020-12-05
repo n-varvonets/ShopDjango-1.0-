@@ -88,10 +88,20 @@ class CategoryManager(models.Manager):
 
     def get_categories_for_left_sidebar(self):
         models_qty = get_models_for_count('notebook', 'smartphone', 'powerbank')
-        qs = self.get_queryset().annotate(*models_qty).values()  # request the result of a basic set of query and
-        # apply an annotation to it to enable calculation of products in the category
-        return [dict(name=c['name'], slug=c['slug'], count=c[self.CATEGORY_NAME_СOUNT_NAME[c['name']]])for c in qs]
-        # return to the view file in variable(categories) a list of the name, slug and category__counted
+        """There are 2 ways how to get category"""
+        # 1st
+        # qs = self.get_queryset().annotate(*models_qty).values()  # request the result of a basic set of model query
+        # and apply an annotation to it to enable calculation of products in the category
+        # return [dict(name=c['name'], slug=c['slug'], count=c[self.CATEGORY_NAME_СOUNT_NAME[c['name']]])for c in qs]
+        # returned to the view file in variable(categories) a list of the name, slug and category__counted
+        # 2nd
+        qs = list(self.get_queryset().annotate(*models_qty))
+        data = [
+            dict(name=c.name, url=c.get_absolute_url(), count=getattr(c, self.CATEGORY_NAME_СOUNT_NAME[c.name]))
+            for c in qs
+        ]   # c - certain obj of category(one of 'name', 'slug', 'notebook__count, ...)
+        # count=getattr(c, self.CATEGORY_NAME_СOUNT_NAME[c.name] --> count=c.notebook__count
+        return data
 
 
 class Category(models.Model):
@@ -101,6 +111,10 @@ class Category(models.Model):
 
     def __str__(self):  # return instead 'object' --> name (how it will be presented when we receive the objects)
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('category_detail', kwargs={'slug': self.slug})  # returns us the url of the page by specifying
+        # the page_name from your url.py and tell kwargs that as a regular expression find a slug of category
 
 
 class Product(models.Model):
