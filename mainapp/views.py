@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import DetailView
 from .models import Notebook, Smartphone, Powerbank, Category
+from .mixins import CategoryDetailMixin
 
 
 def test_view(request):
@@ -8,7 +9,7 @@ def test_view(request):
     return render(request, "base.html", {'categories': categories})  # for ability to refer to a variable by name
 
 
-class ProductDetailView(DetailView):
+class ProductDetailView(CategoryDetailMixin, DetailView):
 
     CT_MODEL_MODEL_CLASS = {
         'notebook': Notebook,
@@ -29,7 +30,7 @@ class ProductDetailView(DetailView):
     slug_url_kwarg = 'slug'  # for urlpatterns in url.py
 
 
-class CategoryDetailView(DetailView):
+class CategoryDetailView(CategoryDetailMixin, DetailView):
 
     model = Category
     queryset = Category.objects.all()
