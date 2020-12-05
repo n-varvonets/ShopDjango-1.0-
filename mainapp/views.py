@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.views.generic import DetailView
-from .models import Notebook, Smartphone, Powerbank
+from .models import Notebook, Smartphone, Powerbank, Category
 
 
 def test_view(request):
-    return render(request, "base.html")
+    categories = Category.objects.get_categories_for_left_sidebar()
+    return render(request, "base.html", {'categories': categories})  # for ability to refer to a variable by name
 
 
 class ProductDetailView(DetailView):

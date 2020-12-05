@@ -17,6 +17,11 @@ def get_product_url(obj, viewname):  # 1arg - our product, 2arg- name of pattern
     #  pass to shop/urls.pattern as regular expression
 
 
+def get_models_for_count(*model_names):  # get all possible created models/categories
+    """return counted q-ty of product in category"""
+    return [models.Count(model_name) for model_name in model_names]
+
+
 class MinResolutionErrorException(Exception):
     pass
 
@@ -68,9 +73,31 @@ class LatestProducts:
 # LatestProducts.objects.get_products_for_main_page('smartphone', 'notebook', 'powerbank', with_respect_to='powerbank')
 
 
+class CategoryManager(models.Manager):
+
+    CATEGORY_NAME_СOUNT_NAME = {
+        'Notebooks': 'notebook__count',
+        'Smartphones': 'smartphone__count',
+        'PowerBanks': 'powerbank__count'
+    }  # if we in get_categories_for_left_sidebar make print(qs) we will get a dict with
+    # <QuerySet [{'id': 1, 'name': 'Notebooks', 'slug': 'notebooks', 'notebook__count': 3, 'smartphone__count': 0,
+    # 'powerbank__count': 0}, ... , }]>, we can get counted category by 'notebook__count'
+
+    def get_queryset(self):
+        return super().get_queryset()  # return based query set
+
+    def get_categories_for_left_sidebar(self):
+        models_qty = get_models_for_count('notebook', 'smartphone', 'powerbank')
+        qs = self.get_queryset().annotate(*models_qty).values()  # request the result of a basic set of query and
+        # apply an annotation to it to enable calculation of products in the category
+        return [dict(name=c['name'], slug=c['slug'], count=c[self.CATEGORY_NAME_СOUNT_NAME[c['name']]])for c in qs]
+        # return to the view file in variable(categories) a list of the name, slug and category__counted
+
+
 class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name="Name of category")
     slug = models.SlugField(unique=True)  # instead unique id we put the product name in url for find him
+    objects = CategoryManager()
 
     def __str__(self):  # return instead 'object' --> name (how it will be presented when we receive the objects)
         return self.name
@@ -132,7 +159,7 @@ class CartProduct(models.Model):
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Total price')
 
     def __str__(self):
-        return "Product: {} (in cart)".format(self.product.tittle)
+        return "Product: {} (in cart)".format(self.content_object.tittle)
 
 
 class Notebook(Product):
@@ -184,6 +211,10 @@ class Cart(models.Model):
     product = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')  # many models connection
     total_product = models.PositiveIntegerField(default=0)  # netbook= 2, Iphone = 3, products = 2, total_prod = 5
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Total price')
+    """in_order - True sign (user has made a purchase, you can't touch the cart anymore). Automatic False value - available for changes.
+    for_anonymous_user - unregistered user has a cart, but he will not be able to formalize it."""
+    in_order = models.BooleanField(default=False)
+    for_anonymous_user = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
