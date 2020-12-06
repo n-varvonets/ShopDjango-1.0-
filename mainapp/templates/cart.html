@@ -16,7 +16,7 @@
   <tbody>
   {% for item in car.products.all %}
     <tr>
-<!-- content_object - we do not have a binding to a specific product model (it is abstract), but we have an M2M binding of the product-->
+<!--  content_object - we do not have a binding to a specific product model (it is abstract), but we have an M2M binding of the product-->
       <th scope="row">{{ item.content_object.tittle }}</th>
       <td class="w-25"><img src="{{ item.content_object.image.url }}" class="img-fluid"></td>
       <td>{{ item.content_object.price }} $ USD/1(q-ty)</td>
