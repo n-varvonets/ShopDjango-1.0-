@@ -176,8 +176,6 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
 
-
-
 class CartProduct(models.Model):
     customer = models.ForeignKey('Customer', verbose_name="Customer", on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', verbose_name='Cart', on_delete=models.CASCADE)
