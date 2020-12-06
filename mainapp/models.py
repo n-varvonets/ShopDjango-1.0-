@@ -12,7 +12,7 @@ User = get_user_model()  # we tell django what want use user what specify in set
 
 
 def get_product_url(obj, viewname):  # 1arg - our product, 2arg- name of pattern which we pass in shop/urls.pattern,
-    ct_model = obj.__class__.meta.model_name  # every obj had hidden attribute 'meta' though which we can get model name
+    ct_model = obj.__class__._meta.model_name  # every obj had hidden attribute 'meta' through which can get model name
     return reverse(viewname, kwargs={'ct_model': ct_model, 'slug': obj.slug})  # 'ct_model' - name of category which we
     #  pass to shop/urls.pattern as regular expression
 
@@ -118,8 +118,8 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    MIN_RESOLUTION = (170, 170)
-    MAX_RESOLUTION = (800, 800)
+    MIN_RESOLUTION = (50, 80)
+    MAX_RESOLUTION = (200, 200)
     MAX_SIZE_IMG = 3145728  # 3 Mb = 3145728 bytes
 
     """Make abstract model(without migrations with DB, just for inheritance)"""
@@ -145,10 +145,27 @@ class Product(models.Model):
         max_height, max_width = self.MAX_RESOLUTION
         if img.height < min_height or img.width < min_width:
             raise MinResolutionErrorException('Image resolution less than minimum allowed!')
-        if img.height > max_height or img.width > max_width:
-            """if more than we cut img"""
-            new_img = img.convert('RGB')
-            resized_new_image = new_img.resize((450, 350), Image.ANTIALIAS)
+        # 1st case - crop the image with fixed proportions
+        # if img.height > max_height or img.width > max_width:
+        #     """if more than we cut img"""
+        #     new_img = img.convert('RGB')
+        #     resized_new_image = new_img.resize((150, 150), Image.ANTIALIAS)
+        #     filestream = BytesIO()  # a variable that will convert an image into a data stream (bytes)
+        #     resized_new_image.save(filestream, "JPEG", quality=90)
+        #     filestream.seek(0)  # Moving to the 0(first) byte from the beginning of the file.
+        #     new_name_resized_img = '{}'.format(self.image.name)
+        #     self.image = InMemoryUploadedFile(
+        #         filestream, "ImageField", new_name_resized_img, 'jpeg/image', sys.getsizeof(filestream), None
+        #     )  # need to pass in InMemoryUploadedFile 6 args (file, field_name, name, content_type, size, charset)
+        # super().save(*args, **kwargs)
+
+        # 2nd case - the height is fixed and the width is proportionally variable.
+        if img.height > max_height:  # if it exceeds ONLY the width size, img-fluid will correct it.
+            img = img.convert('RGB')
+            reduced_height = 160
+            ratio = (reduced_height / float(img.size[1]))
+            w_size = int((float(img.size[0]) * float(ratio)))
+            resized_new_image = img.resize((w_size, reduced_height), Image.ANTIALIAS)
             filestream = BytesIO()  # a variable that will convert an image into a data stream (bytes)
             resized_new_image.save(filestream, "JPEG", quality=90)
             filestream.seek(0)  # Moving to the 0(first) byte from the beginning of the file.
@@ -157,6 +174,8 @@ class Product(models.Model):
                 filestream, "ImageField", new_name_resized_img, 'jpeg/image', sys.getsizeof(filestream), None
             )  # need to pass in InMemoryUploadedFile 6 args (file, field_name, name, content_type, size, charset)
         super().save(*args, **kwargs)
+
+
 
 
 class CartProduct(models.Model):
@@ -218,6 +237,9 @@ class Powerbank(Product):
 
     def __str__(self):
         return '{} : {}'.format(self.category.name, self.tittle)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
 
 
 class Cart(models.Model):

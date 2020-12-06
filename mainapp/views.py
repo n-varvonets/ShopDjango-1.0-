@@ -1,12 +1,21 @@
 from django.shortcuts import render
-from django.views.generic import DetailView
-from .models import Notebook, Smartphone, Powerbank, Category
+from django.views.generic import DetailView, View
+from .models import Notebook, Smartphone, Powerbank, Category, LatestProducts
 from .mixins import CategoryDetailMixin
 
 
-def test_view(request):
-    categories = Category.objects.get_categories_for_left_sidebar()
-    return render(request, "base.html", {'categories': categories})  # for ability to refer to a variable by name
+class BaseView(View):
+
+    def get(self, request, *args, **kwargs):
+        categories = Category.objects.get_categories_for_left_sidebar()
+        products = LatestProducts.objects.get_products_for_main_page(
+            'notebook', 'smartphone', 'powerbank', with_respect_to='notebook'
+        )  # with_respect_to - which product will be firs rendered on main page
+        context = {
+            'products': products,
+            'categories': categories
+        }
+        return render(request, "base.html", context)  # for ability to refer to a variable by name
 
 
 class ProductDetailView(CategoryDetailMixin, DetailView):
@@ -14,7 +23,7 @@ class ProductDetailView(CategoryDetailMixin, DetailView):
     CT_MODEL_MODEL_CLASS = {
         'notebook': Notebook,
         'smartphone': Smartphone,
-        'power_bank': Powerbank
+        'powerbank': Powerbank
     }
     def dispatch(self, request, *args, **kwargs): # is the entry point for requests (get,post...) and is eventually
     # responsible for returning the response we have already processed
