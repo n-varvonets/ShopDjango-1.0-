@@ -17,7 +17,11 @@
         <h5>{{ product.tittle }}</h5>
         <p>Price: {{ product.price }} $</p>
         <p class="text-justify" id="overflow"><small>Description: {{ product.description }}</small></p>
+        <hr>
+<!--        ct_model &#45;&#45;[look in]&ndash;&gt; view.py.ProductDetailView.get_context_data | add_to_cart -[look in]- urls.py-->
+        <a href="{% url 'add_to_cart' ct_model=ct_model slug=product.slug %}"><button class="btn btn-success ml-2">Add in cart</button></a>
     </div>
+    <h4 class="ml-2">Characteristics</h4>
 
     <!--    There are two ways to display tables in html:-->
     <!--1) standard with the help of conditions and creation of a specific template for a separate product-->

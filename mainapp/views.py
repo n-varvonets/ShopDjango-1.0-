@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from django.views.generic import DetailView, View
 from .models import Notebook, Smartphone, Powerbank, Category, LatestProducts, Cart, Customer
 from .mixins import CategoryDetailMixin
@@ -39,6 +40,12 @@ class ProductDetailView(CategoryDetailMixin, DetailView):
     template_name = 'product_detail.html'
     slug_url_kwarg = 'slug'  # for urlpatterns in url.py
 
+    """get current name of category where we placed at the moment"""
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['ct_model'] = self.model._meta.model_name
+        return context
+
 
 class CategoryDetailView(CategoryDetailMixin, DetailView):
     model = Category
@@ -46,6 +53,17 @@ class CategoryDetailView(CategoryDetailMixin, DetailView):
     context_object_name = 'category'
     template_name = 'category_detail.html'
     slug_url_kwarg = 'slug'
+
+
+class AddCartToView(View):
+    """get will be redirected on existing cart.html(not render own.html)"""
+
+    def get(self, request, *args, **kwargs):
+        # make print what we get in urls 'add-to-cart/<str:ct_model>/<str:slug>/'
+        print(kwargs.get('ct_model'))
+        print(kwargs.get('slug'))
+
+        return HttpResponseRedirect('/cart/')
 
 
 class CartView(View):
