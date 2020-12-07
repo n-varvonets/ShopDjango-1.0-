@@ -3,7 +3,7 @@
 {% block content %}
 <h3 class="text-center mt-5 mb-5">Your cart {% if not cart.products.count %} empty {% endif %}</h3>
 
-<table class="table">
+<table class="table text-center">
   <thead>
     <tr>
       <th scope="col">Product</th>
@@ -13,14 +13,15 @@
       <th scope="col">Total price</th>
     </tr>
   </thead>
-  <tbody>
-  {% for item in car.products.all %}
-    <tr>
+  <tbody >
+  {% for item in cart.products.all %}
+    <tr >
 <!--  content_object - we do not have a binding to a specific product model (it is abstract), but we have an M2M binding of the product-->
-      <th scope="row">{{ item.content_object.tittle }}</th>
+      <th class="col-md-2 align-middle" clscope="row">{{ item.content_object.tittle }}</th>
       <td class="w-25"><img src="{{ item.content_object.image.url }}" class="img-fluid"></td>
-      <td>{{ item.content_object.price }} $ USD/1(q-ty)</td>
-      <td>@mdo</td>
+      <td class="align-middle">{{ item.content_object.price }} $ USD(per 1 pcs.)</td>
+      <td class="align-middle">{{ item.qty }}</td>
+        <td class="align-middle">{{ item.total_price }}</td>
     </tr>
     {% endfor %}
   </tbody>
