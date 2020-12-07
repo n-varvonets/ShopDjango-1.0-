@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.views.generic import DetailView, View
 from .models import Notebook, Smartphone, Powerbank, Category, LatestProducts, Cart, Customer
@@ -32,7 +33,7 @@ class ProductDetailView(CategoryDetailMixin, DetailView):
         self.queryset = self.model._base_manager.all()
         return super().dispatch(request, *args, **kwargs)
 
-    # model = Model  # in fact whole our model(notebook, smartphone, pw)
+    # model = Model  # in fact whole our model(one of notebook, smartphone, pw)
     # queryset = Model.objects.all()  # QuerySet is a list of objects of a given model
     context_object_name = 'product'  # 'product' - because it will be common to us.
     template_name = 'product_detail.html'
@@ -50,10 +51,10 @@ class CategoryDetailView(CategoryDetailMixin, DetailView):
 class CartView(View):
 
     def get(self, request, *args, **kwargs):
-
         try:
-            cart = Customer.objects.get(user=request.user)
-        except Customer.DoesNotExist:
+            customer = Customer.objects.get(user=request.user)
+            cart = Cart.objects.get(owner=customer)
+        except ObjectDoesNotExist:
             cart = None
         categories = Category.objects.get_categories_for_left_sidebar()
         context = {

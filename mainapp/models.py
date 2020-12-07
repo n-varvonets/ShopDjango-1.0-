@@ -177,7 +177,7 @@ class Product(models.Model):
 
 
 class CartProduct(models.Model):
-    customer = models.ForeignKey('Customer', verbose_name="Customer", on_delete=models.CASCADE)
+    user = models.ForeignKey('Customer', verbose_name="Customer", on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', verbose_name='Cart', on_delete=models.CASCADE)
     """In order not to create n quantity of new Class(Products) in the cart, we create it as a single external 
     Class(Product) and then with the use of these 3 lines we inherit its characteristics, passing the name of 
@@ -191,6 +191,23 @@ class CartProduct(models.Model):
 
     def __str__(self):
         return "Product: {} (in cart)".format(self.content_object.tittle)
+
+
+class Cart(models.Model):
+    owner = models.ForeignKey('Customer', verbose_name='Owner', on_delete=models.CASCADE)
+    products = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')  # many models connection
+    total_product = models.PositiveIntegerField(default=0)  # netbook= 2, Iphone = 3, products = 2, total_prod = 5
+    total_price = models.DecimalField(max_digits=9, default=0, decimal_places=2, verbose_name='Total price')
+    """in_order - True sign (user has made a purchase, you can't touch the cart anymore). Automatic False value - available for changes.
+    for_anonymous_user - unregistered user has a cart, but he will not be able to formalize it."""
+    in_order = models.BooleanField(default=False)
+    for_anonymous_user = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.id)
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
 
 
 class Notebook(Product):
@@ -240,23 +257,6 @@ class Powerbank(Product):
         return get_product_url(self, 'product_detail')
 
 
-class Cart(models.Model):
-    owner = models.ForeignKey('Customer', verbose_name='Owner', on_delete=models.CASCADE)
-    product = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')  # many models connection
-    total_product = models.PositiveIntegerField(default=0)  # netbook= 2, Iphone = 3, products = 2, total_prod = 5
-    total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Total price')
-    """in_order - True sign (user has made a purchase, you can't touch the cart anymore). Automatic False value - available for changes.
-    for_anonymous_user - unregistered user has a cart, but he will not be able to formalize it."""
-    in_order = models.BooleanField(default=False)
-    for_anonymous_user = models.BooleanField(default=False)
-
-    def __str__(self):
-        return str(self.id)
-
-    def get_absolute_url(self):
-        return get_product_url(self, 'product_detail')
-
-
 class Customer(models.Model):
     """connect user from settings.AUTH_MODEL"""
 
@@ -266,3 +266,20 @@ class Customer(models.Model):
 
     def __str__(self):
         return 'Customer: {} {}'.format(self.user.first_name, self.user.last_name)
+
+
+"""STR adding products in python manage.py shell(be attentive, rename some variable and made migration and possible 
+ inaccuracies of product-->products, user=customer )"""
+# from mainapp.models import Notebook, CartProduct, Cart, Customer
+# from django.contrib.auth import get_user_model
+# User = get_user_model()
+# u = User.objects.first()
+# customer = Customer.objects.create(user=u, phone='12345', address='Baker street')
+# notebook = Notebook.objects.first()
+# c = Cart.objects.create(owner=customer, total_price=0)
+# c.in_order $ False
+# c.for_anonymous_user $ False
+# cp = CartProduct.objects.create(content_object=notebook, user=customer, cart=c, total_price=notebook.price)
+# cp <CartProduct: Product: HP Pavilion Mineral Silver (in cart)>
+# c.products.add(cp)
+# c.products.all()
