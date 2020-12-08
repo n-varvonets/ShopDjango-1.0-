@@ -1,8 +1,10 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
+from django.db.models.signals import post_migrate
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.views.generic import DetailView, View
-from .models import Notebook, Smartphone, Powerbank, Category, LatestProducts, Cart, Customer
+from .models import Notebook, Smartphone, Powerbank, Category, LatestProducts, Cart, Customer, CartProduct
 from .mixins import CategoryDetailMixin
 
 
@@ -36,11 +38,12 @@ class ProductDetailView(CategoryDetailMixin, DetailView):
 
     # model = Model  # in fact whole our model(one of notebook, smartphone, pw)
     # queryset = Model.objects.all()  # QuerySet is a list of objects of a given model
-    context_object_name = 'product'  # 'product' - because it will be common to us.
+    context_object_name = 'product'  # how to refer in .html to our active product
     template_name = 'product_detail.html'
     slug_url_kwarg = 'slug'  # for urlpatterns in url.py
 
     """get current name of category where we placed at the moment"""
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['ct_model'] = self.model._meta.model_name
@@ -59,10 +62,25 @@ class AddCartToView(View):
     """get will be redirected on existing cart.html(not render own.html)"""
 
     def get(self, request, *args, **kwargs):
-        # make print what we get in urls 'add-to-cart/<str:ct_model>/<str:slug>/'
-        print(kwargs.get('ct_model'))
-        print(kwargs.get('slug'))
+        # make print gotten kwargs in urls 'add-to-cart/<str:ct_model>/<str:slug>/' by clicking on button "add to cart"
+        # print(kwargs.get('ct_model')) $ notebook - ct_model was taken from view.ProductDetailView
+        # print(kwargs.get('slug')) $ nb_0002
+        """There 3 steps for adding product to user's cart"""
+        # 1) take all necessary data of active product/customer for creating content_product
+        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        customer = Customer.objects.get(user=request.user)
+        # 2) fill data in fields of models.CartProduct
+        cart = Cart.objects.get(owner=customer, in_order=False)
+        content_type = ContentType.objects.get(model=ct_model)  # define current model of category(object_pk)
+        product = content_type.model_class().objects.get(slug=product_slug)  # model_class() - refer to parents class
+        # print(product)  # Notebooks : Apple MacBook Pro 16" 1TB 2019 Space Gray
+        # 3) create and add new cart_product to the user's cart
+        cart_product = CartProduct.objects.create(
+            user=cart.owner, cart=cart, content_object=product, total_price=product.price  # total_price by default 1 qty
+        )  # was my fault by error (passed content_object=product) >>>ValueError: Cannot assign "<Notebook: Notebooks :
+        # Apple MacBook Pro 16" 1TB 2019 Space Gray>": "CartProduct.content_type" must be a "ContentType" instance.
 
+        cart.products.add(cart_product)
         return HttpResponseRedirect('/cart/')
 
 
@@ -80,6 +98,3 @@ class CartView(View):
             'categories': categories
         }
         return render(request, 'cart.html', context)
-
-
-

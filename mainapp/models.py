@@ -8,7 +8,7 @@ from io import BytesIO  # need for convert img in bytes
 from django.core.files.uploadedfile import InMemoryUploadedFile  # allows find files uploaded through forms (img)
 from django.urls import reverse  # need for building url dor our object in mainapp/templates/product_detail.html
 
-User = get_user_model()  # we tell django what want use user what specify in settings.AUTH_USER_MODEL
+User = get_user_model()  # Return the User model that is active in this project
 
 
 def get_product_url(obj, viewname):  # 1arg - our product, 2arg- name of pattern which we pass in shop/urls.pattern,
