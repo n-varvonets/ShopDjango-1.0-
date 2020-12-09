@@ -98,6 +98,20 @@ class AddCartToView(CartMixin, View):
         return HttpResponseRedirect('/cart/')
 
 
+class DeleteFromCartView(CartMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        content_type = ContentType.objects.get(model=ct_model)
+        product = content_type.model_class().objects.get(slug=product_slug)
+        cart_product = CartProduct.objects.get(
+            user=self.cart.owner, cart=self.cart, content_type=content_type, object_id=product.id
+        )
+        self.cart.products.remove(cart_product)
+        self.cart.save()  # when we add some product our common cart of user save it changes
+        return HttpResponseRedirect('/cart/')
+
+
 class CartView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
