@@ -3,6 +3,20 @@
 {% block content %}
 <h3 class="text-center mt-5 mb-5">Your cart {% if not cart.products.count %} is empty {% endif %}</h3>
 
+<!-- block for rendering messages taken from https://docs.djangoproject.com/en/3.1/ref/contrib/messages/-->
+{% if messages %}
+    {% for message in messages %}
+        <!-- green block with ability to close message taken from  https://getbootstrap.com/docs/5.0/components/alerts/-->
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <strong>{{ message }}</strong>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+    {% endfor %}
+{% endif %}
+<!--if cart is empty don't show a table od products -->
+{% if cart.product.count %}
 <table class="table text-center">
   <thead >
     <tr>
@@ -17,11 +31,20 @@
   <tbody >
   {% for item in cart.products.all %}
     <tr >
-<!--  content_object - we do not have a binding to a specific product model (it is abstract), but we have an M2M binding of the product-->
+      <!--  content_object - we do not have a binding to a specific product model (it is abstract), but we have an M2M binding of the product-->
       <th class="col-md-2 align-middle" clscope="row">{{ item.content_object.tittle }}</th>
       <td class="w-25"><img src="{{ item.content_object.image.url }}" class="img-fluid"></td>
       <td class="col-md-2 align-middle">{{ item.content_object.price }} $</td>
-      <td class="col-md-1 align-middle">{{ item.qty }}</td>
+      <td class="col-md-1 align-middle">
+          <form action="{% url 'change_qty' ct_model=item.content_object.get_model_name slug=item.content_object.slug %}" method="POST"><!-- when POST necessary specify {% csrf_token %} if not, we will get 403 error -->
+              {% csrf_token  %}
+    <!-- name need for named csrf_token. if will not we get data <QueryDict: {'csrfmiddlewaretoken': -->
+    <!-- ['yr5NMI3efqsKHNrxL6qxJL11IeOxe1Mka0gVJFdStTUBnPG24PWwoBWTCKD1Z02r']}> from which we can't get data of qty -->
+              <input type="number"  class="form-control" name="qty" min="1" style="width:70px" value="{{ item.qty }}">
+              <br>
+              <input type="submit" class="btn btn-primary" value="Change the quantity">
+          </form>
+      </td>
         <td class="align-middle">{{ item.total_price }} $</td>
         <td class="align-middle">
             <a href="{% url 'delete_from_cart' ct_model=item.content_object.get_model_name slug=item.content_object.slug %}">
@@ -38,5 +61,6 @@
     </tr>
   </tbody>
 </table>
+{% endif %}
 
 {% endblock %}

@@ -1,5 +1,5 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
+from django.contrib import messages  # for rendering request messages after some action under table of cart
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.views.generic import DetailView, View
@@ -95,6 +95,7 @@ class AddCartToView(CartMixin, View):
         if created:
             self.cart.products.add(cart_product)
         self.cart.save()  # when we add some product our common cart of user save it changes
+        messages.add_message(request, messages.INFO, 'Product successfully added')
         return HttpResponseRedirect('/cart/')
 
 
@@ -108,7 +109,30 @@ class DeleteFromCartView(CartMixin, View):
             user=self.cart.owner, cart=self.cart, content_type=content_type, object_id=product.id
         )
         self.cart.products.remove(cart_product)
+        cart_product.delete()  # delete object of cart_product from base (/admin/)
         self.cart.save()  # when we add some product our common cart of user save it changes
+        messages.add_message(request, messages.INFO, 'Product successfully deleted')
+        return HttpResponseRedirect('/cart/')
+
+
+class ChangeQTYView(CartMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        # print(request.POST)  # show body POST $ <QueryDict: {'csrfmiddlewaretoken': ['3T7b1LmCZWWQTTSWlYBDHf5jZMeKaZH
+        # XFsijYIwgdpoHzV70bTi3eVYX4'], 'qty': ['2']}> | qty - because I named csrf_token in input(POST) cart.html
+        # 1) take our cart_product(same like in DeleteFromCartView... just get, not check)
+        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        content_type = ContentType.objects.get(model=ct_model)
+        product = content_type.model_class().objects.get(slug=product_slug)
+        cart_product = CartProduct.objects.get(
+            user=self.cart.owner, cart=self.cart, content_type=content_type, object_id=product.id
+        )
+        # 2)assign him the value that comes from form request body POST
+        qty = int(request.POST.get('qty'))
+        cart_product.qty = qty
+        cart_product.save()  # logic had in models.CartProduct (self.total_price = self.qty * self.content_object.price)
+        self.cart.save()  # for changing data in cart
+        messages.add_message(request, messages.INFO, 'Quantity successfully changed')
         return HttpResponseRedirect('/cart/')
 
 
