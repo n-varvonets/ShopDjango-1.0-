@@ -4,27 +4,27 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.views.generic import DetailView, View
 from .models import Notebook, Smartphone, Powerbank, Category, LatestProducts, Cart, Customer, CartProduct
-from .mixins import CategoryDetailMixin
+from .mixins import CategoryDetailMixin, CartMixin
 
 
-class BaseView(View):
+class BaseView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        customer = Customer.objects.get(user=request.user)
-        cart = Cart.objects.get(owner=customer, in_order=False)
         categories = Category.objects.get_categories_for_left_sidebar()
+        # customer = Customer.objects.get(user=request.user)  # For DRY in the code we created in mixins CartMixin wh-->
+        # cart = Cart.objects.get(owner=customer, in_order=False) # -->ich will give the user's cart(authorized and not)
         products = LatestProducts.objects.get_products_for_main_page(
             'notebook', 'smartphone', 'powerbank', with_respect_to='notebook'
         )  # with_respect_to - which product will be firs rendered on main page
         context = {
             'products': products,
             'categories': categories,
-            'cart': cart
+            'cart': self.cart
         }
         return render(request, "base.html", context)  # for ability to refer to a variable by name
 
 
-class ProductDetailView(CategoryDetailMixin, DetailView):
+class ProductDetailView(CartMixin, CategoryDetailMixin, DetailView):
     CT_MODEL_MODEL_CLASS = {
         'notebook': Notebook,
         'smartphone': Smartphone,
@@ -52,7 +52,7 @@ class ProductDetailView(CategoryDetailMixin, DetailView):
         return context
 
 
-class CategoryDetailView(CategoryDetailMixin, DetailView):
+class CategoryDetailView(CartMixin, CategoryDetailMixin, DetailView):
     model = Category
     queryset = Category.objects.all()
     context_object_name = 'category'
@@ -60,7 +60,7 @@ class CategoryDetailView(CategoryDetailMixin, DetailView):
     slug_url_kwarg = 'slug'
 
 
-class AddCartToView(View):
+class AddCartToView(CartMixin, View):
     """get will be redirected on existing cart.html(not render own.html)"""
 
     def get(self, request, *args, **kwargs):
@@ -71,10 +71,10 @@ class AddCartToView(View):
 
         # 1) take all necessary data of active product/customer for creating content_product
         ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
-        customer = Customer.objects.get(user=request.user)
+        # customer = Customer.objects.get(user=request.user)  # For DRY was created CartMixin
+        # cart = Cart.objects.get(owner=customer, in_order=False) # For DRY was created CartMixin
 
         # 2) fill data in fields of models.CartProduct
-        cart = Cart.objects.get(owner=customer, in_order=False)
         content_type = ContentType.objects.get(model=ct_model)  # define current model of category(object_pk)
         product = content_type.model_class().objects.get(slug=product_slug)  # model_class() - refer to parents class
         # print(product)  # Notebooks : Apple MacBook Pro 16" 1TB 2019 Space Gray
@@ -87,27 +87,27 @@ class AddCartToView(View):
 
         # 3.2) First Check if product un cart - get. else: create new one (get_or_create take tuple(few objects))
         cart_product, created = CartProduct.objects.get_or_create(  # Unpack tuple | check created/not | true/false
-            user=cart.owner, cart=cart, content_type=content_type,  object_id=product.id, total_price=product.price
+            user=self.cart.owner, cart=self.cart, content_type=content_type,  object_id=product.id, total_price=product.price
         )  # to avoid the error "Field 'content_object' does not generate an automatic reverse relation and therefore
         # cannot be used for reverse querying. If it is a GenericForeignKey, consider adding a GenericRelation". -
         # - because content_object=product is missing from every copper product. But content_object can be defined
         # through the existing content_type and object_id in the product models.
         if created:
-            cart.products.add(cart_product)
+            self.cart.products.add(cart_product)
         return HttpResponseRedirect('/cart/')
 
 
-class CartView(View):
+class CartView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        try:
-            customer = Customer.objects.get(user=request.user)
-            cart = Cart.objects.get(owner=customer)
-        except ObjectDoesNotExist:
-            cart = None
+        # try:
+        #     # customer = Customer.objects.get(user=request.user)   # For DRY was created CartMixin
+        #     # cart = Cart.objects.get(owner=customer)   # For DRY was created CartMixin
+        # except ObjectDoesNotExist:
+        #     cart = None
         categories = Category.objects.get_categories_for_left_sidebar()
         context = {
-            'cart': cart,
+            'cart': self.cart,
             'categories': categories
         }
         return render(request, 'cart.html', context)
