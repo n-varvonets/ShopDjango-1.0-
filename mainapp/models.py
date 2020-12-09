@@ -192,6 +192,10 @@ class CartProduct(models.Model):
     def __str__(self):
         return "Product: {} (in cart)".format(self.content_object.tittle)
 
+    def save(self, *args, **kwargs):
+        self.total_price = self.qty * self.content_object.price
+        super().save(*args, **kwargs)
+
 
 class Cart(models.Model):
     owner = models.ForeignKey('Customer', verbose_name='Owner', on_delete=models.CASCADE)
