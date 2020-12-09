@@ -94,6 +94,7 @@ class AddCartToView(CartMixin, View):
         # through the existing content_type and object_id in the product models.
         if created:
             self.cart.products.add(cart_product)
+        self.cart.save()  # when we add some product our common cart of user save it changes
         return HttpResponseRedirect('/cart/')
 
 

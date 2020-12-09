@@ -213,6 +213,21 @@ class Cart(models.Model):
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
 
+    """for calculating the quantity of products and their amount in the cart
+     with the help of M2M by addressing to all products in the cart."""
+    def save(self, *args, **kwargs):
+        cart_data = self.products.aggregate(models.Sum('total_price'), models.Count('id'))  # refer to all products
+        # in cart, collect them and sum up the values by the total_price and id fields
+
+        # print(cart_data)  # {'total_price__sum': None, 'id__count': 0} - None can get error (need value) so make IF..
+        if cart_data.get('total_price__sum'):
+            self.total_price = cart_data['total_price__sum']
+        else:
+            self.total_price = 0
+        self.total_product = cart_data['id__count']  # not checking on None, because we get certain int value
+        super().save(*args, **kwargs)  # the save method will be called in AddCartToView because I want to
+        # refresh/resave data in cart ONLY    when some product added to cart
+
 
 class Notebook(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Diagonal')

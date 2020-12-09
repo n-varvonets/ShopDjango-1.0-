@@ -30,7 +30,6 @@ class CartMixin(View): # view - because he has def dispatch
             cart = Cart.objects.filter(for_anonymous_user=True)  # if we find cart for anonymous user
             if not cart:
                 cart = Cart.objects.create(for_anonymous_user=True)
-
         self.cart = cart
         return super().dispatch(request, *args, **kwargs)
 

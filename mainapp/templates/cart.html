@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h3 class="text-center mt-5 mb-5">Your cart {% if not cart.products.count %} empty {% endif %}</h3>
+<h3 class="text-center mt-5 mb-5">Your cart {% if not cart.products.count %} is empty {% endif %}</h3>
 
 <table class="table text-center">
   <thead>
@@ -21,9 +21,15 @@
       <td class="w-25"><img src="{{ item.content_object.image.url }}" class="img-fluid"></td>
       <td class="align-middle">{{ item.content_object.price }} $ USD(per 1 pcs.)</td>
       <td class="align-middle">{{ item.qty }}</td>
-        <td class="align-middle">{{ item.total_price }}</td>
+        <td class="align-middle">{{ item.total_price }} $</td>
     </tr>
     {% endfor %}
+    <tr>
+        <td colspan="2"></td>
+        <td>Total:</td>
+        <td>{{ cart.total_products }}</td>
+        <td><strong>{{ cart.total_price }} $</strong></td>
+    </tr>
   </tbody>
 </table>
 
