@@ -317,8 +317,10 @@ class Order(models.Model):
     STATUS_READY = 'is_ready'
     STATUS_COMPLETED = 'completed'
 
-    BUYING_TYPE_SELF = 'self'
-    BUYING_TYPE_DELIVERY = 'delivery'
+    BUYING_TYPE_OUR_STORES = 'our_stores'
+    BUYING_TYPE_BY_COURIER_NP = 'courier_np'
+    BUYING_TYPE_BY_SELF_NP = 'self_new_post'
+    BUYING_TYPE_BY_SELF_UKR_POST = 'self_new_ukr_post'
 
     STATUS_CHOICE = (
         (STATUS_NEW, 'new_order'),
@@ -328,8 +330,10 @@ class Order(models.Model):
     )
 
     BUYING_CHOICE = (
-        (BUYING_TYPE_SELF, 'buying_type_self'),
-        (BUYING_TYPE_DELIVERY, 'buying_type_delivery')
+        (BUYING_TYPE_OUR_STORES, 'from our stores '),
+        (BUYING_TYPE_BY_COURIER_NP, 'by courier of NP to your address'),
+        (BUYING_TYPE_BY_SELF_NP, 'by New Post Office'),
+        (BUYING_TYPE_BY_SELF_UKR_POST, 'by UkrPost Office')
     )
 
     customer = models.ForeignKey(Customer, verbose_name='Customer', related_name='related_orders', on_delete=models.CASCADE)
@@ -347,11 +351,11 @@ class Order(models.Model):
         max_length=100,
         verbose_name='Order status',
         choices=BUYING_CHOICE,
-        default=BUYING_TYPE_SELF
+        default=BUYING_TYPE_OUR_STORES
     )
-    comment = models.TextField(verbose_name='Comment to order', null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True, verbose_name='Date of created order')
     order_date = models.DateField(verbose_name='Order pickup date', default=timezone.now)
+    comment = models.TextField(verbose_name='Comment to order', null=True, blank=True)
 
     def __str__(self):
         return str(self.id)

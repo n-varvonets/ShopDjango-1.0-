@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mainapp',
+    'crispy_forms'
 ]
 
 MIDDLEWARE = [
@@ -130,3 +131,5 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static_dev')
 ]  # variable where the django will look for new static files to move them  in 'static'/'media'
 
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

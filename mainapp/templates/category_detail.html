@@ -20,8 +20,8 @@
                 </h4>
                 <h5>{{ product.price }} $(USD)</h5>
 
-                <a href="{% url 'add_to_cart' ct_model=product.get_model_name slug=product.slug %}"></a>
-                        <button class="btn btn-success">Add to cart</button>
+                <a href="{% url 'add_to_cart' ct_model=product.get_model_name slug=product.slug %}">
+                        <button class="btn btn-success">Add to cart</button></a>
                     </div>
                  <div class="card-footer">
                 <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
@@ -31,4 +31,4 @@
     {% endfor %}
 </div>
 
-{% endblock %}
+{% endblock content %}

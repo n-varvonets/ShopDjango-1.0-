@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}  <!-- need for good rendering .forms -->
+
+{% block content %}
+<h3 class="text-center mt-5 mb-5">Checkout order</h3>
+<table class="table text-center">
+  <thead >
+    <tr>
+      <th scope="col" class="align-middle">Product</th>
+      <th scope="col" class="align-middle">Image</th>
+      <th scope="col" class="align-middle">Price <br>(per 1 pcs.)</th>
+      <th scope="col" class="align-middle">Quantity</th>
+      <th scope="col" class="align-middle">Total price</th>
+    </tr>
+  </thead>
+  <tbody >
+  {% for item in cart.products.all %}
+    <tr >
+      <!--  content_object - we do not have a binding to a specific product model (it is abstract), but we have an M2M binding of the product-->
+      <th class="col-md-2 align-middle" clscope="row">{{ item.content_object.tittle }}</th>
+      <td class="w-25"><img src="{{ item.content_object.image.url }}" class="img-fluid"></td>
+      <td class="col-md-2 align-middle">{{ item.content_object.price }} $</td>
+        <td>{{ item.qty }}</td>
+        <td class="align-middle">{{ item.total_price }} $</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="2"></td>
+        <td>Total:</td>
+        <td>{{ cart.total_products }}</td>
+        <td><strong>{{ cart.total_price }} $</strong></td>
+    </tr>
+  </tbody>
+</table>
+<hr>
+
+<h3 class="text-center mt-5 mb-5">Order form</h3>
+<form action="" method="POST"></form>
+  <!--pip install django-crispy-forms (necessary need specify it in setting.py in INSTALLED_APPS
+   and create variable CRISPY_TEMPLATE_PACK + {% load crispy_forms_tags %} ) - library for good look rendering our forms-->
+  {{ form|crispy  }}<!-- '|crisp' - filter -->
+  <input type="submit" class="btn btn-success btn-block mb-5" value="Make an order">
+</form>
+{% endblock content %}
