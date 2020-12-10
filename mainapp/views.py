@@ -154,3 +154,6 @@ class CartView(CartMixin, View):
             'categories': categories
         }
         return render(request, 'cart.html', context)
+
+
+

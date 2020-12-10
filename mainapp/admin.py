@@ -81,4 +81,5 @@ admin.site.register(Notebook, NotebookAdmin)  # NotebookAdmin for filter when cr
 admin.site.register(Smartphone, SmartphoneAdmin)
 admin.site.register(Powerbank, PowerbankAdmin)
 admin.site.register(Cart)
+admin.site.register(Order)
 admin.site.register(Customer)
