@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h3 class="text-center mt-5 mb-5">Your cart {% if not cart.products.count %} is empty {% endif %}</h3>
+<h3 class="text-center mt-4 mb-3"><strong>Your cart {% if not cart.products.count %} is empty {% endif %}</strong></h3>
 
 <!-- block for rendering messages taken from https://docs.djangoproject.com/en/3.1/ref/contrib/messages/-->
 {% if messages %}

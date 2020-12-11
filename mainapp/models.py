@@ -218,20 +218,25 @@ class Cart(models.Model):
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
 
-    """for calculating the quantity of products and their amount in the cart
-     with the help of M2M by addressing to all products in the cart."""
-    def save(self, *args, **kwargs):
-        cart_data = self.products.aggregate(models.Sum('total_price'), models.Count('id'))  # refer to all products
-        # in cart, collect them and sum up the values by the total_price and id fields
+    # """for calculating the quantity of products and their amount in the cart
+    #  with the help of M2M by addressing to all products in the cart."""
 
-        # print(cart_data)  # {'total_price__sum': None, 'id__count': 0} - None can get error (need value) so make IF..
-        if cart_data.get('total_price__sum'):
-            self.total_price = cart_data['total_price__sum']
-        else:
-            self.total_price = 0
-        self.total_product = cart_data['id__count']  # not checking on None, because we get certain int value
-        super().save(*args, **kwargs)  # the save method will be called in AddCartToView because I want to
-        # refresh/resave data in cart ONLY    when some product added to cart
+    # def save(self, *args, **kwargs):
+    #     cart_data = self.products.aggregate(models.Sum('total_price'), models.Count('id'))  # refer to all products
+    #     # in cart, collect them and sum up the values by the total_price and id fields
+    #
+    #     # print(cart_data)  # {'total_price__sum': None, 'id__count': 0} - None can get error (need value) so make IF
+    #     if cart_data.get('total_price__sum'):
+    #         self.total_price = cart_data['total_price__sum']
+    #     else:
+    #         self.total_price = 0
+    #     self.total_product = cart_data['id__count']  # not checking on None, because we get certain int value
+    #     super().save(*args, **kwargs)  # the save method will be called in AddCartToView because I want to
+    #     # refresh/resave data in cart ONLY when some product added to cart
+    #
+    # """but in the end project I understand that this logic doesn't work as need, because after created completed cart
+    # status of cart in_order rewrite on True and django can't recognize the new cart in self., so for fix that need:
+    # 1)to create utils.py; 2)copy-paste the logic of save() there; 3)delete this method from models.py"""
 
 
 class Notebook(Product):
@@ -330,16 +335,17 @@ class Order(models.Model):
     )
 
     BUYING_CHOICE = (
-        (BUYING_TYPE_OUR_STORES, 'from our stores '),
-        (BUYING_TYPE_BY_COURIER_NP, 'by courier of NP to your address'),
-        (BUYING_TYPE_BY_SELF_NP, 'by New Post Office'),
-        (BUYING_TYPE_BY_SELF_UKR_POST, 'by UkrPost Office')
+        (BUYING_TYPE_OUR_STORES, 'From our stores '),
+        (BUYING_TYPE_BY_COURIER_NP, 'By courier of NP to your address'),
+        (BUYING_TYPE_BY_SELF_NP, 'By New Post Office'),
+        (BUYING_TYPE_BY_SELF_UKR_POST, 'By UkrPost Office')
     )
 
     customer = models.ForeignKey(Customer, verbose_name='Customer', related_name='related_orders', on_delete=models.CASCADE)
     first_name = models.CharField(max_length=255, verbose_name='First name')
     last_name = models.CharField(max_length=255, verbose_name='Last name')
     phone = models.CharField(max_length=20, verbose_name='Number of phone')
+    cart = models.ForeignKey(Cart, verbose_name='Cart', on_delete=models.CASCADE, null=True, blank=True)
     address = models.CharField(max_length=1024, verbose_name='Address', null=True, blank=True)
     status = models.CharField(
         max_length=100,

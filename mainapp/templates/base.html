@@ -22,6 +22,11 @@
     body{
         padding-top : 56px;
     }
+    #fixed-sidebar {
+        position: fixed;
+        max-width: 20%;
+        color: white;
+    }
 
 </style>
 
@@ -51,7 +56,7 @@
 
     <div class="row">
 
-        <div class="col-lg-3">
+        <div class="col-lg-3 col-sm-12"> <!-- id="fixed-sidebar" -->
 
             <h1 class="my-4">Shop Name</h1>
             <div class="list-group">
@@ -65,6 +70,20 @@
 
         <div class="col-lg-9">
             {% block content %}
+
+            <!-- block for rendering messages taken from https://docs.djangoproject.com/en/3.1/ref/contrib/messages/-->
+                {% if messages %}
+                    {% for message in messages %}
+                        <!-- green block with ability to close message taken from  https://getbootstrap.com/docs/5.0/components/alerts/-->
+                        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                          <strong>{{ message }}</strong>
+                          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
             <div id="carouselExampleIndicators" class="carousel slide my-4" data-ride="carousel">
                 <ol class="carousel-indicators">
                     <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>

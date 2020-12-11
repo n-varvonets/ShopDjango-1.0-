@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}  <!-- need for good rendering .forms -->
 
 {% block content %}
-<h3 class="text-center mt-5 mb-5">Checkout order</h3>
+<h3 class="text-center mt-5 mb-5"><strong>Checkout order</strong></h3>
 <table class="table text-center">
   <thead >
     <tr>
@@ -34,11 +34,12 @@
 </table>
 <hr>
 
-<h3 class="text-center mt-5 mb-5">Order form</h3>
-<form action="" method="POST"></form>
+<h3 class="text-center mt-5 mb-5"><strong>Order form</strong></h3>
+<form action="{% url 'make_order' %}" method="POST">
+  {% csrf_token %} <!-- for post method -->
   <!--pip install django-crispy-forms (necessary need specify it in setting.py in INSTALLED_APPS
    and create variable CRISPY_TEMPLATE_PACK + {% load crispy_forms_tags %} ) - library for good look rendering our forms-->
-  {{ form|crispy  }}<!-- '|crisp' - filter -->
+  {{ form|crispy  }}<!-- '|crispy' - filter -->
   <input type="submit" class="btn btn-success btn-block mb-5" value="Make an order">
 </form>
 {% endblock content %}

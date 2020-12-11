@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db import transaction  # decorator for correctly saving cart (class MakeOrderView)
 from django.contrib import messages  # for rendering request messages after some action under table of cart
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
@@ -6,6 +7,7 @@ from django.views.generic import DetailView, View
 from .models import Notebook, Smartphone, Powerbank, Category, LatestProducts, Cart, Customer, CartProduct
 from .mixins import CategoryDetailMixin, CartMixin
 from .forms import OrderForm
+from .utils import recalc_cart
 
 
 class BaseView(CartMixin, View):
@@ -99,7 +101,9 @@ class AddCartToView(CartMixin, View):
         # through the existing content_type and object_id in the product models.
         if created:
             self.cart.products.add(cart_product)
-        self.cart.save()  # when we add some product our common cart of user save it changes
+        # self.cart.save()  # when we add some product our common cart of user save it changes
+        # above method 'save()' is deprecated, see explanation in models.Cart.save..., so we will use next:
+        recalc_cart(self.cart)
         messages.add_message(request, messages.INFO, 'Product successfully added')
         return HttpResponseRedirect('/cart/')
 
@@ -115,7 +119,9 @@ class DeleteFromCartView(CartMixin, View):
         )
         self.cart.products.remove(cart_product)
         cart_product.delete()  # delete object of cart_product from base (/admin/)
-        self.cart.save()  # when we add some product our common cart of user save it changes
+        # self.cart.save()  # when we add some product our common cart of user save it changes
+        # above method 'save()' is deprecated, see explanation in models.Cart.save..., so we will use next:
+        recalc_cart(self.cart)
         messages.add_message(request, messages.INFO, 'Product successfully deleted')
         return HttpResponseRedirect('/cart/')
 
@@ -136,7 +142,9 @@ class ChangeQTYView(CartMixin, View):
         qty = int(request.POST.get('qty'))
         cart_product.qty = qty
         cart_product.save()  # logic had in models.CartProduct (self.total_price = self.qty * self.content_object.price)
-        self.cart.save()  # for changing data in cart
+        # self.cart.save()  # for changing data in cart
+        # above method 'save()' is deprecated, see explanation in models.Cart.save..., so we will use next:
+        recalc_cart(self.cart)
         messages.add_message(request, messages.INFO, 'Quantity successfully changed')
         return HttpResponseRedirect('/cart/')
 
@@ -169,5 +177,32 @@ class CheckOutView(CartMixin, View):
         }
         return render(request, 'checkout.html', context)
 
+
+class MakeOrderView(CartMixin, View):
+    """for process the order"""
+    @transaction.atomic  # if something goes wrong when saving he return everything back with no changes
+    def post(self, request, *args, **kwargs):
+        form = OrderForm(request.POST or None)  # take an instance of order
+        customer = Customer.objects.get(user=request.user)  # take our customer from usual model
+        if form.is_valid():  # django has special function for validation form
+            new_order = form.save(commit=False)  # instance, which we still need to fill for full version before save
+            # (rewrite business logic for coding version of received data from form)
+            new_order.customer = customer
+            new_order.first_name = form.cleaned_data['first_name']  # record the information received from form
+            new_order.last_name = form.cleaned_data['last_name']
+            new_order.phone = form.cleaned_data['phone']
+            new_order.address = form.cleaned_data['address']
+            new_order.buying_type = form.cleaned_data['buying_type']
+            new_order.order_date = form.cleaned_data['order_date']
+            new_order.comment = form.cleaned_data['comment']
+            new_order.save()
+            self.cart.in_order = True
+            self.cart.save()
+            new_order.cart = self.cart  # it is necessary to assign a new completed card to a registered client
+            new_order.save()
+            customer.orders.add(new_order)  # record for the user his orders
+            messages.add_message(request, messages.INFO, 'Thank you for the order! The manager will contact you.')
+            return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/checkout/')  # if something went wrong redirect to checkout page
 
 
