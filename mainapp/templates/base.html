@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Shop Homepage - Start Bootstrap Template</title>
+    <title>Shop Homepage</title>
 
     <!-- Bootstrap core CSS. Take from https://getbootstrap.com/docs/4.5/getting-started/introduction/  -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
@@ -19,134 +19,176 @@
 
 </head>
 <style>
-    body{
-        padding-top : 56px;
-    }
-    #fixed-sidebar {
-        position: fixed;
-        max-width: 20%;
-        color: white;
-    }
 
+#sidebar {
+   position: fixed;
+   z-index: 1;
+   width:22%;
+   left:4%
+
+}
+#marg {
+    margin-left:25%
+}
+body, html{
+    padding-top:36px;
+    height: 100%;
+}
+* {
+	margin: 0;
+	padding: 0;
+}
+html,body, .wrapper {
+	height: 100%;
+}
+.content {
+	box-sizing: border-box;
+	min-height: 100%;
+	padding-bottom: 90px;
+}
+.footer {
+	height: 40px;
+	margin-top: -60px;
+	background: #78866b;
+}
+#dec_non {
+    text-decoration: none;
+    color: #78866b;
+    font-family: cursive;
+}
 </style>
 
 <body>
 
 <!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container">
-        <a class="navbar-brand" href="#">Start Bootstrap</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
-                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarResponsive">
-            <ul class="navbar-nav ml-auto">
 
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cart' %}">Cart <span class="badge badge-pill badge-danger">{{ cart.products.count }}</span></a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<div class="wrapper">
+    <div class="content">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+            <div class="container">
+                <a class="navbar-brand ml-2" href="{% url 'base' %}"><img class="img-fluid" width="70px"
+                                                                                    src="https://cdn.worldvectorlogo.com/logos/wetransfer-1.svg"
+                                                                                    alt=""></a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                        aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ml-auto">
 
-<!-- Page Content -->
-<div class="container">
-
-    <div class="row">
-
-        <div class="col-lg-3 col-sm-12"> <!-- id="fixed-sidebar" -->
-
-            <h1 class="my-4">Shop Name</h1>
-            <div class="list-group">
-                {% for category in categories %}
-                <a href="{{ category.url }}" class="list-group-item">{{ category.name }} ({{ category.count }})</a>
-                {% endfor %}
-            </div>
-
-        </div>
-        <!-- /.col-lg-3 -->
-
-        <div class="col-lg-9">
-            {% block content %}
-
-            <!-- block for rendering messages taken from https://docs.djangoproject.com/en/3.1/ref/contrib/messages/-->
-                {% if messages %}
-                    {% for message in messages %}
-                        <!-- green block with ability to close message taken from  https://getbootstrap.com/docs/5.0/components/alerts/-->
-                        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                          <strong>{{ message }}</strong>
-                          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
-                          </button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-            <div id="carouselExampleIndicators" class="carousel slide my-4" data-ride="carousel">
-                <ol class="carousel-indicators">
-                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-                </ol>
-                <div class="carousel-inner" role="listbox">
-                    <div class="carousel-item active">
-                        <img class="d-block img-fluid" src="http://placehold.it/900x350" alt="First slide">
-                    </div>
-                    <div class="carousel-item">
-                        <img class="d-block img-fluid" src="http://placehold.it/900x350" alt="Second slide">
-                    </div>
-                    <div class="carousel-item">
-                        <img class="d-block img-fluid" src="http://placehold.it/900x350" alt="Third slide">
-                    </div>
+                        <li class="nav-item">
+                            <big><a class="nav-link" href="{% url 'cart' %}"><strong>Cart </strong><span
+                                    class="badge badge-pill badge-danger">{{ cart.products.count }}</span></a></big>
+                        </li>
+                    </ul>
                 </div>
-                <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Previous</span>
-                </a>
-                <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
-                </a>
             </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="container">
 
             <div class="row">
-                {% for product in products %}
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card h-100 text-center">
-                        <a href="{{ product.get_absolute_url }}"><img class="img-fluid p-3" src="{{ product.image.url }}" alt=""></a>
-                        <div class="card-body">
-                            <h4 class="card-title">
-                                <a href="{{ product.get_absolute_url }}">{{ product.tittle }}</a>
-                            </h4>
-                            <h5>{{ product.price }} $(USD)</h5>
-                        </div>
-                        <div class="card-footer">
-                            <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
-                        </div>
+
+                <div class="col" id="sidebar">
+
+                    <a href="{% url 'base' %}" id="dec_non"><h1 class="my-4"><small><strong>Shop Name</strong></small></h1></a>
+                    <div class="list-group">
+                        {% for category in categories %}
+                        <a href="{{ category.url }}" class="list-group-item">{{ category.name }} ({{ category.count}})</a>
+                        {% endfor %}
                     </div>
+
                 </div>
-                {% endfor %}
+                <!-- /.col-lg-3 -->
+
+                <div class="col-lg-9" id="marg">
+                    {% block content %}
+
+                    <!-- block for rendering messages taken from https://docs.djangoproject.com/en/3.1/ref/contrib/messages/-->
+                    {% if messages %}
+                    {% for message in messages %}
+                    <!-- green block with ability to close message taken from  https://getbootstrap.com/docs/5.0/components/alerts/-->
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <strong>{{ message }}</strong>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <div id="carouselExampleIndicators" class="carousel slide my-4" data-ride="carousel">
+                        <ol class="carousel-indicators">
+                            <li data-target="" data-slide-to="0"></li>
+                            <li data-target="" data-slide-to="1"></li>
+                            <li data-target="" data-slide-to="2"></li>
+                        </ol>
+
+                        <div class="carousel-inner" role="listbox">
+                            <div class="carousel-item active">
+                                <img class="d-block img-fluid"
+                                     src="https://www.darvin-studio.ru/files/uploads/images/statii/garantii-v-seo/garantii-v-seo-prodvizhenii.jpg"
+                                     height="350px" alt="First slide">
+                            </div>
+                            <div class="carousel-item">
+                                <img class="d-block img-fluid"
+                                     src="https://neftegaz.ru/upload/iblock/bea/beabc5092adddcc559f1bfe96cf01a3e.jpg"
+                                     height="350px" alt="Second slide">
+                            </div>
+                            <div class="carousel-item">
+                                <img class="d-block img-fluid" src="https://stihi.ru/pics/2015/09/18/3084.jpg"
+                                     alt="Third slide">
+                            </div>
+                        </div>
+                        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button"
+                           data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button"
+                           data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+
+                    <div class="row">
+                        {% for product in products %}
+                        <div class="col-lg-4 col-md-6 mb-5">
+                            <div class="card h-100 text-center">
+                                <a href="{{ product.get_absolute_url }}"><img class="img-fluid p-5"
+                                                                              src="{{ product.image.url }}" alt=""></a>
+                                <div class="card-body">
+                                    <h4 class="card-title">
+                                        <a href="{{ product.get_absolute_url }}">{{ product.tittle }}</a>
+                                    </h4>
+                                    <h5>{{ product.price }} $ USD</h5>
+                                </div>
+                                <div class="card-footer">
+                                    <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- /.row -->
+                    {% endblock content %}
+                </div>
+                <!-- /.col-lg-9 -->
+
             </div>
             <!-- /.row -->
-            {% endblock content %}
         </div>
-        <!-- /.col-lg-9 -->
-
-    </div>
-    <!-- /.row -->
-
-</div>
-<!-- /.container -->
-
-<!-- Footer -->
-<footer class="py-5 bg-dark">
-    <div class="container">
-        <p class="m-0 text-center text-white">Copyright &copy; Your Website 2020</p>
     </div>
     <!-- /.container -->
-</footer>
+
+    <!-- Footer -->
+    <div class="footer bg-dark">
+        <p class="text-center  text-white pt-2">&copy; My Website 2020</p>
+
+        <!-- /.container -->
+    </div>
 
 <!-- Bootstrap core JavaScript. Take it from
 https://getbootstrap.com/docs/4.5/getting-started/introduction/ for ability  to click on the arrow and switch images -->
@@ -156,7 +198,7 @@ https://getbootstrap.com/docs/4.5/getting-started/introduction/ for ability  to 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
         crossorigin="anonymous"></script>
-
+</div>
 </body>
 
 </html>

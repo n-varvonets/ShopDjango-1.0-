@@ -9,6 +9,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile  # allows find f
 from django.urls import reverse  # need for building url dor our object in mainapp/templates/product_detail.html
 from django.utils import timezone
 
+
 User = get_user_model()  # Return the User model that is active in this project
 
 
@@ -141,7 +142,6 @@ class Product(models.Model):
 
     def get_model_name(self):
         return self.__class__.__name__.lower()
-
 
     def save(self, *args, **kwargs):
         image = self.image

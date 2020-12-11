@@ -10,6 +10,7 @@ from .forms import OrderForm
 from .utils import recalc_cart
 
 
+
 class BaseView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
@@ -104,7 +105,7 @@ class AddCartToView(CartMixin, View):
         # self.cart.save()  # when we add some product our common cart of user save it changes
         # above method 'save()' is deprecated, see explanation in models.Cart.save..., so we will use next:
         recalc_cart(self.cart)
-        messages.add_message(request, messages.INFO, 'Product successfully added')
+        # messages.add_message(request, messages.INFO, 'Product successfully added')
         return HttpResponseRedirect('/cart/')
 
 

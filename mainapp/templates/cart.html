@@ -42,7 +42,7 @@
     <!-- ['yr5NMI3efqsKHNrxL6qxJL11IeOxe1Mka0gVJFdStTUBnPG24PWwoBWTCKD1Z02r']}> from which we can't get data of qty -->
               <input type="number"  class="form-control" name="qty" min="1" style="width:70px" value="{{ item.qty }}">
               <br>
-              <input type="submit" class="btn btn-primary" value="Change the quantity">
+              <input type="submit" class="btn btn-primary" value="confirm">
           </form>
       </td>
         <td class="align-middle">{{ item.total_price }} $</td>
@@ -62,6 +62,10 @@
     </tr>
   </tbody>
 </table>
+{% endif %}
+
+{% if not cart.products.count %}
+
 {% endif %}
 
 {% endblock %}
