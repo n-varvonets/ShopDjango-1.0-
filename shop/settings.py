@@ -16,9 +16,7 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-django_heroku.settings(locals())
-db_from_env = dj_database_url.config()
-DATABASES['default'].update(db_from_env)
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -135,6 +133,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static_dev')
 ]  # variable where the django will look for new static files to move them  in 'static'/'media'
+
+# django_heroku.settings(locals())
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
 
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
