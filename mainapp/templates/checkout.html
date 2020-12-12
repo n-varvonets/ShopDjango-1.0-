@@ -20,7 +20,7 @@
       <th class="col-md-2 align-middle" clscope="row">{{ item.content_object.tittle }}</th>
       <td class="w-25"><img src="{{ item.content_object.image.url }}" class="img-fluid"></td>
       <td class="col-md-2 align-middle">{{ item.content_object.price }} $</td>
-        <td>{{ item.qty }}</td>
+        <td class="align-middle">{{ item.qty }}</td>
         <td class="align-middle">{{ item.total_price }} $</td>
     </tr>
     {% endfor %}
